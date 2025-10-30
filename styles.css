@@ -18,6 +18,25 @@
      z-index: 50;
  }
 
+ /* View navigation styles */
+ .view-nav-btn {
+     transition: all 150ms ease;
+ }
+
+ .view-nav-btn.active {
+     background-color: white;
+     color: #4F46E5;
+     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+ }
+
+ .view-nav-btn:not(.active) {
+     color: #6B7280;
+ }
+
+ .view-nav-btn:not(.active):hover {
+     background-color: #F3F4F6;
+ }
+
  /* upcoming list tweaks */
  #upcoming-list-ul li:hover {
      transform: translateY(-2px);

@@ -289,9 +289,44 @@ function showView(viewName) {
     // then, show the one we asked for (as long as it's not the modal)
     if (views[viewName] && viewName !== 'modal') {
         views[viewName].classList.remove('hidden');
+
+        // If showing calendar view, ensure correct subview is shown
+        if (viewName === 'calendar') {
+            const calendarContainer = document.getElementById('calendar-container');
+            const listContainer = document.getElementById('list-container');
+            const showingCalendar = !calendarContainer.classList.contains('hidden');
+
+            document.getElementById('show-calendar-view').classList.toggle('active', showingCalendar);
+            document.getElementById('show-list-view').classList.toggle('active', !showingCalendar);
+        }
     }
 }
 
+/**
+ * Switch between calendar and list views within the calendar page
+ * @param {string} viewType - 'calendar' or 'list'
+ */
+function switchCalendarView(viewType) {
+    const calendarContainer = document.getElementById('calendar-container');
+    const calendarHeader = document.getElementById('calendar-header');
+    const listContainer = document.getElementById('list-container');
+    const calendarBtn = document.getElementById('show-calendar-view');
+    const listBtn = document.getElementById('show-list-view');
+
+    if (viewType === 'calendar') {
+        calendarContainer.classList.remove('hidden');
+        calendarHeader.classList.remove('hidden');
+        listContainer.classList.add('hidden');
+        calendarBtn.classList.add('active');
+        listBtn.classList.remove('active');
+    } else {
+        calendarContainer.classList.add('hidden');
+        calendarHeader.classList.add('hidden');
+        listContainer.classList.remove('hidden');
+        calendarBtn.classList.remove('active');
+        listBtn.classList.add('active');
+    }
+}
 // simple functions to show or hide the modal
 function showModal() {
     if (views.modal) views.modal.classList.remove('hidden');
@@ -369,16 +404,16 @@ function buildCalendar(year, month) {
 
             const location = document.createElement('p');
             location.className = "text-gray-600";
-            location.textContent = eventData ? eventData.location : '';
+            location.textContent = eventData.location || '';
 
             const time = document.createElement('p');
             time.className = "text-gray-600";
-            time.textContent = eventData ? eventData.time : '';
+            time.textContent = eventData.time || '';
 
             eventDiv.appendChild(truckName);
             eventDiv.appendChild(flag);
-            eventDiv.appendChild(location);
-            eventDiv.appendChild(time);
+            if (location.textContent) eventDiv.appendChild(location);
+            if (time.textContent) eventDiv.appendChild(time);
 
             dayCell.appendChild(eventDiv);
         }
@@ -419,7 +454,14 @@ function buildUpcomingList(daysAhead = 30) {
 
     // Get all scheduled dates from today forward
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const scheduledDates = Object.keys(foodTruckSchedule)
+        .filter(dateString => {
+            const [year, month, day] = dateString.split('-').map(Number);
+            const d = new Date(year, month - 1, day);
+            return d >= today; // keep only upcoming
+        })
         .sort()
         .slice(0, daysAhead);
 
@@ -435,8 +477,26 @@ function buildUpcomingList(daysAhead = 30) {
         const left = document.createElement('div');
         const dateLabel = document.createElement('div');
         dateLabel.className = 'text-sm text-gray-500';
-        dateLabel.textContent = new Date(dateString).toLocaleDateString();
 
+        // Calculate days from today
+        const eventDate = new Date(dateString);
+        const todayStart = new Date();
+        //Increment by one say since convertion didnt work out
+        eventDate.setDate(eventDate.getDate() + 1);
+        todayStart.setHours(0, 0, 0, 0);
+        const diffDays = Math.floor((eventDate - todayStart) / (1000 * 60 * 60 * 24));
+
+        // Format the relative date
+        let relativeDate;
+        if (diffDays === 0) {
+            relativeDate = 'Today';
+        } else if (diffDays === 1) {
+            relativeDate = 'Tomorrow';
+        } else {
+            relativeDate = `In ${diffDays} days`;
+        }
+
+        dateLabel.textContent = `${relativeDate} - ${eventDate.toLocaleDateString()}`;
         const title = document.createElement('div');
         title.className = 'font-semibold text-gray-800';
         title.textContent = eventData.truckName;
@@ -523,6 +583,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('next-month-btn').addEventListener('click', () => {
         currentDisplayDate.setMonth(currentDisplayDate.getMonth() + 1);
         buildCalendar(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth());
+    });
+
+    // calendar/list view switching
+    document.getElementById('show-calendar-view').addEventListener('click', () => {
+        switchCalendarView('calendar');
+    });
+
+    document.getElementById('show-list-view').addEventListener('click', () => {
+        switchCalendarView('list');
+
+        document.getElementById("calendar-month-year").classList.remove("active");
     });
 
 });
