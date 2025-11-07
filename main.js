@@ -281,7 +281,8 @@ document.addEventListener('DOMContentLoaded', () => {
     views = {
         home: document.getElementById('home-view'),
         calendar: document.getElementById('calendar-view'),
-        modal: document.getElementById('modal-view')
+        modal: document.getElementById('modal-view'),
+        share: document.getElementById('share-view')
     };
     calendarGrid = document.getElementById('calendar-days-grid');
     calendarTitle = document.getElementById('calendar-month-year');
@@ -306,10 +307,26 @@ document.addEventListener('DOMContentLoaded', () => {
         showView('calendar');
     });
 
+    // home -> share
+    const viewShareBtn = document.getElementById('view-share-btn');
+    if (viewShareBtn) {
+        viewShareBtn.addEventListener('click', () => {
+            showView('share');
+        });
+    }
+
     // calendar -> home
     document.getElementById('back-to-home-btn').addEventListener('click', () => {
         showView('home');
     });
+
+    // share -> home (back)
+    const shareBackBtn = document.getElementById('share-back-btn');
+    if (shareBackBtn) shareBackBtn.addEventListener('click', () => showView('home'));
+
+    // share cancel button inside the form
+    const shareCancel = document.getElementById('share-cancel');
+    if (shareCancel) shareCancel.addEventListener('click', () => showView('home'));
 
     // modal close button
     document.getElementById('modal-close-btn').addEventListener('click', hideModal);
