@@ -5,9 +5,6 @@ import { initJoinGroup } from './joinGroup.js';
 // --- app state ---
 // this just keeps track of what month we're looking at
 let currentDisplayDate = new Date();
-// let's set the calendar to october 2025 so it matches the screenshot
-currentDisplayDate = new Date(2025, 9, 1);
-
 // determine a base date for the "every other day" schedule
 // we pick the earliest date in the foodTruckSchedule keys as the base
 const scheduleDates = Object.keys(foodTruckSchedule).slice().sort();
@@ -104,34 +101,65 @@ function buildCalendar(year, month) {
 
     // set the "october 2025" title
     const monthName = new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    calendarTitle.textContent = monthName.toUpperCase();
+    calendarTitle.textContent = monthName; // Font style handles the uppercase if needed
 
     // get all the info we need to build the month grid
     const firstDay = new Date(year, month, 1).getDay(); // 0=sun, 1=mon...
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
+    // identify "today" so we can highlight it
+    const today = new Date();
+    const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+    const currentDay = today.getDate();
+
     // 1. create empty cells for the days before the 1st
     for (let i = 0; i < firstDay; i++) {
         const emptyCell = document.createElement('div');
-        emptyCell.className = "calendar-day border-b border-r bg-gray-50";
+        // Add 'empty' class to remove borders/bg for cleaner look
+        emptyCell.className = "calendar-day empty";
         calendarGrid.appendChild(emptyCell);
     }
 
     // 2. create cells for each day of the month
     for (let day = 1; day <= daysInMonth; day++) {
         const dayCell = document.createElement('div');
-        dayCell.className = "calendar-day border-b border-r p-2";
+        dayCell.className = "calendar-day p-3 flex flex-col justify-between cursor-pointer"; // Flex layout for content
+
+        // check if this cell is "today"
+        if (isCurrentMonth && day === currentDay) {
+            dayCell.classList.add('today-highlight');
+        }
 
         const currentDate = new Date(year, month, day);
         const dayOfWeek = currentDate.getDay(); // 5 = friday
 
         // add the day number (1, 2, 3...)
         const dayNumber = document.createElement('div');
-        dayNumber.className = "text-sm font-semibold text-gray-700";
-        dayNumber.textContent = day;
+        dayNumber.className = "flex justify-between items-start";
+        
+        const numberSpan = document.createElement('span');
+        numberSpan.textContent = day;
+        // Bold font for today, gray for others
+        numberSpan.className = (isCurrentMonth && day === currentDay) ? "text-lg font-bold text-mauve-700" : "text-sm font-semibold text-gray-400";
+        
+        dayNumber.appendChild(numberSpan);
+
+        // If it is today, let's add that label inside the header line
+        if (isCurrentMonth && day === currentDay) {
+            const todayBadge = document.createElement('span');
+            todayBadge.className = "text-[10px] font-bold uppercase bg-mauve-100 text-mauve-700 px-2 py-0.5 rounded-full tracking-wide";
+            todayBadge.textContent = "Today";
+            dayNumber.appendChild(todayBadge);
+        }
+
         dayCell.appendChild(dayNumber);
 
-        const dateString = currentDate.toISOString().split('T')[0];
+        // Use local date handling to prevent timezone shifts
+        const yearStr = currentDate.getFullYear();
+        const monthStr = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const dayStr = String(currentDate.getDate()).padStart(2, '0');
+        const dateString = `${yearStr}-${monthStr}-${dayStr}`;
+        
         const eventData = foodTruckSchedule[dateString];
 
         if (eventData) {
@@ -139,36 +167,51 @@ function buildCalendar(year, month) {
             dayCell.classList.add('has-event');
 
             const eventDiv = document.createElement('div');
-            eventDiv.className = "mt-1 text-xs";
+            eventDiv.className = "mt-auto pt-2"; // Push to bottom
 
-            const truckName = document.createElement('p');
-            truckName.className = "font-bold text-gray-900";
-            truckName.textContent = eventData.truckName;
+            // Tag style for truck name
+            const truckTag = document.createElement('div');
+            truckTag.className = "bg-white border border-mauve-200 rounded-lg p-2 shadow-sm group-hover:shadow-md transition-shadow";
+            
+            const nameRow = document.createElement('div');
+            nameRow.className = "flex items-center gap-1.5 mb-1";
+            
+            const flagSpan = document.createElement('span');
+            flagSpan.textContent = eventData.flag;
+            flagSpan.className = "text-lg";
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.className = "text-xs font-bold text-gray-800 truncate leading-tight";
+            nameSpan.textContent = eventData.truckName;
+            
+            nameRow.appendChild(flagSpan);
+            nameRow.appendChild(nameSpan);
+            truckTag.appendChild(nameRow);
 
-            const flag = document.createElement('button');
-            flag.className = "text-lg hover:opacity-75 transition-opacity";
-            flag.textContent = eventData.flag;
-            flag.addEventListener('click', () => {
+            // Time (small)
+            if (eventData.time) {
+                const timeSpan = document.createElement('div');
+                timeSpan.className = "text-[10px] text-gray-500 pl-0.5 flex items-center gap-1";
+                // Add clock icon
+                timeSpan.innerHTML = `<i data-lucide="clock" class="w-3 h-3 inline-block"></i> ${eventData.time.split('-')[0].trim()}`;
+                truckTag.appendChild(timeSpan);
+            }
+
+            eventDiv.appendChild(truckTag);
+            dayCell.appendChild(eventDiv);
+
+            // Make whole cell clickable
+            dayCell.addEventListener('click', (e) => {
                 populateAndShowModal(eventData);
             });
-
-            const location = document.createElement('p');
-            location.className = "text-gray-600";
-            location.textContent = eventData.location || '';
-
-            const time = document.createElement('p');
-            time.className = "text-gray-600";
-            time.textContent = eventData.time || '';
-
-            eventDiv.appendChild(truckName);
-            eventDiv.appendChild(flag);
-            if (location.textContent) eventDiv.appendChild(location);
-            if (time.textContent) eventDiv.appendChild(time);
-
-            dayCell.appendChild(eventDiv);
         }
 
         calendarGrid.appendChild(dayCell);
+    }
+    
+    // Re-initialize icons for newly created elements
+    if (window.lucide) {
+        window.lucide.createIcons();
     }
 }
 
@@ -186,15 +229,14 @@ function populateAndShowModal(eventData) {
     if (modalImg2) modalImg2.src = info.img2;
 
     // just in case the images don't load, show a placeholder
-    if (modalImg1) modalImg1.onerror = () => { modalImg1.src = 'https://placehold.co/300x200/E2E8F0/4A5568?text=Food+Photo'; };
-    if (modalImg2) modalImg2.onerror = () => { modalImg2.src = 'https://placehold.co/300x200/E2E8F0/4A5568?text=Food+Photo'; };
+    if (modalImg1) modalImg1.onerror = () => { modalImg1.src = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80'; };
+    if (modalImg2) modalImg2.onerror = () => { modalImg2.src = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80'; };
 
     showModal();
 }
 
 /**
- * Build the upcoming list view: shows the next N upcoming event days (based on every-other-day rule)
- * and maps any known trucks from foodTruckSchedule.
+ * Build the upcoming list view: shows the next N upcoming event days
  * @param {number} daysAhead - how many days ahead to search (defaults to 30)
  */
 function buildUpcomingList(daysAhead = 30) {
@@ -215,67 +257,87 @@ function buildUpcomingList(daysAhead = 30) {
         .sort()
         .slice(0, daysAhead);
 
+    if (scheduledDates.length === 0) {
+        listEl.innerHTML = '<li class="p-4 text-center text-gray-500 italic">No events scheduled soon.</li>';
+        return;
+    }
+
     scheduledDates.forEach(dateString => {
         const eventData = foodTruckSchedule[dateString];
 
         const li = document.createElement('li');
-        li.className = 'bg-white p-3 rounded-lg shadow-sm';
+        li.className = 'cursor-pointer group';
 
-        const row = document.createElement('div');
-        row.className = 'flex justify-between items-start gap-3';
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'p-4 flex items-center justify-between';
 
-        const left = document.createElement('div');
-        const dateLabel = document.createElement('div');
-        dateLabel.className = 'text-sm text-gray-500';
+        const leftDiv = document.createElement('div');
+        leftDiv.className = 'flex items-center gap-4';
 
-        // Calculate days from today
-        const eventDate = new Date(dateString);
-        const todayStart = new Date();
-        //Increment by one say since convertion didnt work out
-        eventDate.setDate(eventDate.getDate() + 1);
-        todayStart.setHours(0, 0, 0, 0);
-        const diffDays = Math.floor((eventDate - todayStart) / (1000 * 60 * 60 * 24));
+        // Date Badge
+        const [y, m, d] = dateString.split('-').map(Number);
+        const eventDate = new Date(y, m - 1, d);
+        const monthShort = eventDate.toLocaleDateString('en-US', { month: 'short' });
+        const dayNum = eventDate.getDate();
 
-        // Format the relative date
-        let relativeDate;
-        if (diffDays === 0) {
-            relativeDate = 'Today';
-        } else if (diffDays === 1) {
-            relativeDate = 'Tomorrow';
-        } else {
-            relativeDate = `In ${diffDays} days`;
-        }
+        const dateBadge = document.createElement('div');
+        dateBadge.className = "flex flex-col items-center justify-center w-14 h-14 bg-mauve-50 rounded-xl text-mauve-700 border border-mauve-100 group-hover:bg-mauve-100 transition-colors";
+        dateBadge.innerHTML = `<span class="text-xs font-bold uppercase">${monthShort}</span><span class="text-xl font-bold">${dayNum}</span>`;
+        
+        leftDiv.appendChild(dateBadge);
 
-        dateLabel.textContent = `${relativeDate} - ${eventDate.toLocaleDateString()}`;
-        const title = document.createElement('div');
-        title.className = 'font-semibold text-gray-800';
+        const infoDiv = document.createElement('div');
+        
+        const titleRow = document.createElement('div');
+        titleRow.className = "flex items-center gap-2";
+        
+        const title = document.createElement('h4');
+        title.className = 'font-bold text-gray-800 text-lg group-hover:text-mauve-600 transition-colors';
         title.textContent = eventData.truckName;
+        titleRow.appendChild(title);
+        
+        const flag = document.createElement('span');
+        flag.className = "text-xl";
+        flag.textContent = eventData.flag;
+        titleRow.appendChild(flag);
+        
+        infoDiv.appendChild(titleRow);
 
-        left.appendChild(dateLabel);
-        left.appendChild(title);
+        const metaRow = document.createElement('p');
+        metaRow.className = "text-sm text-gray-500 mt-0.5 flex items-center gap-3";
+        metaRow.innerHTML = `
+            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${eventData.time}</span>
+            <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> ${eventData.location}</span>
+        `;
+        infoDiv.appendChild(metaRow);
 
-        const right = document.createElement('div');
-        right.className = 'text-right';
-        const flagBtn = document.createElement('button');
-        flagBtn.className = 'text-xl';
-        flagBtn.textContent = eventData.flag;
-        right.appendChild(flagBtn);
+        leftDiv.appendChild(infoDiv);
+        
+        const rightDiv = document.createElement('div');
+        rightDiv.innerHTML = `<i data-lucide="chevron-right" class="w-5 h-5 text-gray-300 group-hover:text-mauve-400 transform group-hover:translate-x-1 transition-all"></i>`;
 
-        row.appendChild(left);
-        row.appendChild(right);
-
-        li.appendChild(row);
-
-        // make item clickable to show modal
-        li.style.cursor = 'pointer';
+        contentDiv.appendChild(leftDiv);
+        contentDiv.appendChild(rightDiv);
+        
+        li.appendChild(contentDiv);
         li.addEventListener('click', () => populateAndShowModal(eventData));
 
         listEl.appendChild(li);
     });
+    
+    // Initialize icons for the list items
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 }
 // --- initial app setup ---
 // this runs once all the html is loaded
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Initialize Lucide icons
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 
     // --- assign dom elements ---
     // now that the dom is loaded, we can safely grab our elements

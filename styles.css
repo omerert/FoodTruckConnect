@@ -1,97 +1,105 @@
- .calendar-grid {
-     display: grid;
-     grid-template-columns: repeat(7, minmax(0, 1fr));
- }
+/* Modern Reset & Base */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+}
 
- .calendar-day {
-     min-height: 120px;
- }
+.calendar-day {
+    min-height: 130px; /* Slightly taller for better spacing */
+    background-color: #ffffff;
+    border-radius: 1rem; /* Rounded corners for day cells */
+    transition: all 0.2s ease-in-out;
+}
 
- .calendar-day-header {
-     font-size: 0.875rem;
-     font-weight: 600;
-     color: #4A5568;
- }
+/* Remove the old harsh borders */
+.calendar-day:not(.empty) {
+    border: 1px solid #f3f4f6;
+}
 
- /* Ensure modal is on top */
- #modal-view {
-     z-index: 50;
- }
+.calendar-day:not(.empty):hover {
+    border-color: #d1d5db;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+}
 
- /* View navigation styles */
- .view-nav-btn {
-     transition: all 150ms ease;
- }
+/* Empty cells (padding days) */
+.calendar-day.empty {
+    background-color: transparent;
+    border: none;
+}
 
- .view-nav-btn.active {
-     background-color: white;
-     color: #4F46E5;
-     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
- }
+/* Highlight for today's date - Using Mauve Theme */
+.calendar-day.today-highlight {
+    background-color: #fff; /* Clean white background */
+    border: 2px solid #9d7586; /* Mauve-500 border */
+    box-shadow: 0 0 0 4px rgba(157, 117, 134, 0.15); /* Soft glow */
+    position: relative;
+    z-index: 20;
+}
 
- .view-nav-btn:not(.active) {
-     color: #6B7280;
- }
+/* Event Indicator */
+.calendar-day.has-event {
+    background-color: #fbf7f9; /* Mauve-50 */
+}
 
- .view-nav-btn:not(.active):hover {
-     background-color: #F3F4F6;
- }
+/* View Navigation Buttons (Toggle) */
+.view-nav-btn {
+    transition: all 0.2s ease;
+}
 
- /* upcoming list tweaks */
- #upcoming-list-ul li:hover {
-     transform: translateY(-2px);
-     transition: transform 150ms ease;
- }
+.view-nav-btn.active {
+    background-color: #9d7586; /* Mauve-500 */
+    color: white;
+    box-shadow: 0 2px 4px rgba(157, 117, 134, 0.3);
+}
 
- /* highlight calendar event days */
- .calendar-day.has-event {
-     background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
- }
+.view-nav-btn:not(.active) {
+    color: #6b7280;
+    background-color: transparent;
+}
 
- /* Group card animations */
- #groups-list>div {
-     animation: slideInUp 0.3s ease-out;
- }
+.view-nav-btn:not(.active):hover {
+    color: #374151;
+    background-color: #f3f4f6;
+}
 
- @keyframes slideInUp {
-     from {
-         opacity: 0;
-         transform: translateY(10px);
-     }
+/* List View Items */
+#upcoming-list-ul li {
+    background-color: white;
+    border: 1px solid #f3f4f6;
+    border-radius: 1rem;
+    transition: all 0.2s ease;
+}
 
-     to {
-         opacity: 1;
-         transform: translateY(0);
-     }
- }
+#upcoming-list-ul li:hover {
+    border-color: #e5e7eb;
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
 
- /* Group join button animations */
- .group-join-btn {
-     transition: all 200ms ease;
- }
+/* Animation for Content */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
- .group-join-btn:hover {
-     transform: translateY(-2px);
-     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
- }
+#groups-list > div, 
+#stories-list > li {
+    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 
- .group-join-btn:active {
-     transform: translateY(0);
- }
-
- /* Filter controls styling */
- #browse-groups-section select,
- #create-group-section input,
- #create-group-section textarea,
- #create-group-section select {
-     transition: border-color 150ms ease, box-shadow 150ms ease;
- }
-
- #browse-groups-section select:focus,
- #create-group-section input:focus,
- #create-group-section textarea:focus,
- #create-group-section select:focus {
-     outline: none;
-     border-color: #4F46E5;
-     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
- }
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+}
+::-webkit-scrollbar-thumb {
+    background: #d1d5db; 
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af; 
+}
