@@ -208,13 +208,26 @@
 
 
         <div id="share-view" class="hidden">
-            <div class="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl border border-mauve-100 overflow-hidden">
-                <div class="bg-mauve-50 p-6 border-b border-mauve-100 flex items-center justify-between">
-                    <h2 class="text-2xl font-bold text-gray-800">Share Your Experience</h2>
-                    <button id="share-back-btn" class="text-mauve-600 hover:text-mauve-800 font-medium text-sm">Cancel</button>
+            <div class="max-w-5xl mx-auto">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Share Your Experience</h2>
+                        <p class="text-gray-500 mt-1">Write reviews and track your food truck visits</p>
+                    </div>
+                    <button id="share-back-btn" class="text-mauve-600 hover:text-mauve-800 font-medium flex items-center gap-2 transition-colors self-start md:self-auto">
+                        <i data-lucide="home" class="w-4 h-4"></i>
+                        Back to Home
+                    </button>
                 </div>
 
-                <div class="p-6 sm:p-8">
+                <!-- Tab Navigation -->
+                <div class="inline-flex bg-white rounded-xl p-1 shadow-sm border border-gray-100 mb-8">
+                    <button id="tab-write-review" class="px-6 py-2.5 rounded-lg text-sm font-medium view-nav-btn active transition-all">Write Reviews</button>
+                    <button id="tab-my-reviews" class="px-6 py-2.5 rounded-lg text-sm font-medium view-nav-btn transition-all">Reviews</button>
+                </div>
+
+                <!-- Write Review Tab -->
+                <div id="write-review-section" class="bg-white rounded-3xl shadow-xl border border-mauve-100 p-8">
                     <form id="share-form" class="space-y-6">
                         <div>
                             <label for="truck-select" class="block text-sm font-semibold text-gray-700 mb-2">Which truck did you visit?</label>
@@ -265,6 +278,16 @@
                             <button type="submit" id="share-submit" class="px-8 py-3 rounded-xl bg-mauve-600 text-white font-medium shadow-lg shadow-mauve-200 hover:bg-mauve-700 hover:shadow-xl transition-all transform hover:-translate-y-0.5">Post Story</button>
                         </div>
                     </form>
+                </div>
+
+                <!-- My Reviews Tab -->
+                <div id="my-reviews-section" class="hidden">
+                    <div class="max-w-3xl mx-auto">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Your Reviews</h3>
+                        <ul id="user-stories-list" class="space-y-4">
+                            <li class="text-center text-gray-500 py-8 col-span-full">No reviews yet. Write one to get started!</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>

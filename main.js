@@ -1,6 +1,7 @@
 // Import schedule data from separate module
 import { foodTruckSchedule } from './calendarData.js';
 import { initJoinGroup } from './joinGroup.js';
+import { initRotatingText } from './viewReviews.js';
 
 // --- app state ---
 // this just keeps track of what month we're looking at
@@ -519,6 +520,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize the Join Group module
     initJoinGroup();
+    
+    // Initialize rotating text on homepage
+    initRotatingText();
     
     // Check initial state (default is home)
     showView('home');
