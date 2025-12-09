@@ -282,8 +282,16 @@
 
                 <!-- My Reviews Tab -->
                 <div id="my-reviews-section" class="hidden">
-                    <div class="max-w-3xl mx-auto">
-                        <h3 class="text-xl font-bold text-gray-800 mb-6">Your Reviews</h3>
+                    <div class="max-w-5xl mx-auto">
+                        <div class="flex items-center justify-end mb-8">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm text-gray-600 font-medium">Sort by:</span>
+                                <select id="reviews-sort-select" class="text-sm px-3 py-1 rounded-lg border border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:border-mauve-500">
+                                    <option value="latest">Latest</option>
+                                    <option value="oldest">Oldest</option>
+                                </select>
+                            </div>
+                        </div>
                         <ul id="user-stories-list" class="space-y-4">
                             <li class="text-center text-gray-500 py-8 col-span-full">No reviews yet. Write one to get started!</li>
                         </ul>

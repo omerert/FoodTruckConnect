@@ -154,9 +154,7 @@ function renderStoriesList() {
     }
     stories.forEach(story => {
         const li = document.createElement('li');
-        li.className = 'bg-white rounded-2xl shadow-sm border border-mauve-100 hover:shadow-lg hover:border-mauve-200 transition-all duration-300 p-6 flex flex-col gap-4';
-
-        // Header with truck name and rating
+        li.className = 'bg-white rounded-3xl shadow-xl border border-mauve-100 p-8 flex flex-col gap-5';        // Header with truck name and rating
         const header = document.createElement('div');
         header.className = 'flex items-start justify-between gap-4';
         
@@ -278,7 +276,7 @@ function renderStoriesList() {
         
         // Reaction picker popup
         const reactionPicker = document.createElement('div');
-        reactionPicker.className = 'hidden absolute bottom-full mb-2 left-0 bg-white rounded-xl shadow-lg border border-mauve-200 p-3 flex gap-2 z-50 animate-fadeIn';
+        reactionPicker.className = 'hidden absolute bottom-full mb-2 left-0 bg-white rounded-xl shadow-lg border border-mauve-200 p-3 flex gap-2 z-50 animate-fadeIn flex-wrap max-w-xs';
         reactionEmojis.forEach(emoji => {
             const emojiBtn = document.createElement('button');
             emojiBtn.type = 'button';
@@ -490,13 +488,24 @@ function renderUserReviews() {
         return;
     }
     
-    stories.forEach(story => {
+    // Get sort option
+    const sortSelect = document.getElementById('reviews-sort-select');
+    const sortOrder = sortSelect ? sortSelect.value : 'latest';
+    
+    // Sort stories based on selected option
+    const sortedStories = [...stories].sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
+    });
+    
+    sortedStories.forEach(story => {
         const li = document.createElement('li');
-        li.className = 'bg-white rounded-2xl shadow-sm border border-mauve-100 hover:shadow-lg hover:border-mauve-200 transition-all duration-300 p-6 flex flex-col gap-4';
+        li.className = 'bg-white rounded-2xl shadow-xl border border-mauve-100 hover:shadow-lg hover:border-mauve-200 transition-all duration-300 p-6 flex flex-col gap-5';
         
         // Header
         const header = document.createElement('div');
-        header.className = 'flex items-start justify-between gap-4 mb-3';
+        header.className = 'flex items-start justify-between gap-4 mb-2';
         
         const truckInfo = document.createElement('div');
         truckInfo.className = 'flex-1';
@@ -505,11 +514,17 @@ function renderUserReviews() {
         truckName.className = 'text-lg font-bold text-gray-800 mb-1';
         truckName.textContent = story.truck;
         
+        const visitedDate = document.createElement('p');
+        visitedDate.className = 'text-xs text-gray-400 mb-2';
+        const visitedDateObj = new Date(story.createdAt);
+        visitedDate.textContent = `Visited on ${visitedDateObj.toLocaleDateString()}`;
+        
         const ratingSpan = document.createElement('div');
         ratingSpan.className = 'flex items-center gap-1';
-        ratingSpan.innerHTML = `<span class="text-yellow-400">${'★'.repeat(story.rating)}${'☆'.repeat(5-story.rating)}</span> <span class="text-sm text-gray-500 font-semibold">${story.rating}/5</span>`;
+        ratingSpan.innerHTML = `<span class="text-yellow-400 text-sm">${'★'.repeat(story.rating)}${'☆'.repeat(5-story.rating)}</span> <span class="text-xs text-gray-500">${story.rating}/5</span>`;
         
         truckInfo.appendChild(truckName);
+        truckInfo.appendChild(visitedDate);
         truckInfo.appendChild(ratingSpan);
         header.appendChild(truckInfo);
         
@@ -589,10 +604,10 @@ function renderUserReviews() {
         
         // Story text (editable mode)
         const textContainer = document.createElement('div');
-        textContainer.className = 'mb-3';
+        textContainer.className = 'mb-4';
         
         const text = document.createElement('p');
-        text.className = 'text-gray-700 text-sm leading-relaxed';
+        text.className = 'text-gray-700 text-base leading-relaxed';
         text.textContent = story.story;
         
         const textInput = document.createElement('textarea');
@@ -606,7 +621,7 @@ function renderUserReviews() {
         
         // Rating (editable mode)
         const ratingContainer = document.createElement('div');
-        ratingContainer.className = 'mb-3';
+        ratingContainer.className = 'mb-3 hidden';
         
         const ratingDisplay = document.createElement('div');
         ratingDisplay.className = 'flex items-center gap-1';
@@ -875,37 +890,53 @@ function renderUserReviews() {
         // Reaction emoji options
         const reactionEmojis = ['👍', '❤️', '😂', '🤩', '🔥', '😋', '😍', '🎉', '👏', '🙌', '😲', '🤔', '😒', '🤢', '😤', '🤡', '💀'];
 
-        // Action buttons (reactions + comments)
-        const actions = document.createElement('div');
-        actions.className = 'flex gap-3 pt-3 border-t border-gray-100 relative';
+        // Action buttons (reactions + comments) - grouped in one row
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'flex gap-2 pt-4 border-t border-gray-100';
 
         const reactBtn = document.createElement('button');
         reactBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-mauve-50 to-purple-50 text-mauve-700 hover:from-mauve-100 hover:to-purple-100 border border-mauve-200 hover:border-mauve-300 relative';
-        reactBtn.textContent = '👍 React';
+        reactBtn.textContent = 'React';
         
-        // Reaction picker popup
+        // Reaction picker popup (hidden by default, shows on click)
         const reactionPicker = document.createElement('div');
-        reactionPicker.className = 'hidden absolute bottom-full mb-2 left-0 bg-white rounded-xl shadow-lg border border-mauve-200 p-3 flex gap-2 z-50 animate-fadeIn flex-wrap max-w-xs';
+        reactionPicker.className = 'hidden absolute bottom-full mb-2 left-0 bg-white rounded-xl shadow-lg border border-mauve-200 p-3 z-50 flex-wrap w-64 overflow-hidden';
         reactionEmojis.forEach(emoji => {
             const emojiBtn = document.createElement('button');
             emojiBtn.type = 'button';
             emojiBtn.textContent = emoji;
-            emojiBtn.className = 'text-2xl p-2 rounded-lg hover:bg-mauve-50 transition-colors transform hover:scale-125';
+            emojiBtn.className = 'text-2xl p-2 rounded-lg hover:bg-mauve-50 transition-all transform hover:scale-125';
             emojiBtn.addEventListener('click', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 addReactionForStory(story.id, emoji);
+                updateReactionDisplay();
                 reactionPicker.classList.add('hidden');
             });
             reactionPicker.appendChild(emojiBtn);
         });
         
-        reactBtn.addEventListener('click', () => {
+        reactBtn.appendChild(reactionPicker);
+        
+        reactBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             reactionPicker.classList.toggle('hidden');
         });
         
-        actions.appendChild(reactBtn);
-        actions.appendChild(reactionPicker);
-        li.appendChild(actions);
+        // Close picker when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!reactBtn.contains(e.target)) {
+                reactionPicker.classList.add('hidden');
+            }
+        });
+        actionsDiv.appendChild(reactBtn);
+        
+        const commentBtn = document.createElement('button');
+        commentBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium transition-all text-gray-600 hover:text-mauve-600 hover:bg-gray-50';
+        commentBtn.textContent = 'Comment';
+        
+        actionsDiv.appendChild(commentBtn);
+        li.appendChild(actionsDiv);
         
         // Comments section
         const comments = getCommentsForStory(story.id);
@@ -921,7 +952,7 @@ function renderUserReviews() {
         if (commentCount > 0) {
             commentDisplayBtn.innerHTML = `💬 View ${commentCount} Comment${commentCount !== 1 ? 's' : ''}`;
         } else {
-            commentDisplayBtn.innerHTML = '💬 Add Comment';
+            commentDisplayBtn.innerHTML = '💬 View 0 Comments';
         }
         
         let commentsExpanded = false;
@@ -1010,6 +1041,9 @@ function renderUserReviews() {
             inputDiv.appendChild(inputAvatar);
             inputDiv.appendChild(formDiv);
             commentsDisplay.appendChild(inputDiv);
+            
+            // Return reference to input for focusing
+            return input;
         }
         
         if (commentCount > 0) {
@@ -1022,24 +1056,40 @@ function renderUserReviews() {
             if (newCount > 0) {
                 commentDisplayBtn.innerHTML = `💬 View ${newCount} Comment${newCount !== 1 ? 's' : ''}`;
             } else {
-                commentDisplayBtn.innerHTML = '💬 Add Comment';
+                commentDisplayBtn.innerHTML = '💬 View 0 Comments';
             }
         }
         
-        commentDisplayBtn.addEventListener('click', () => {
+        function toggleComments(shouldFocus = false) {
             commentsExpanded = !commentsExpanded;
             if (commentsExpanded) {
                 if (commentsDisplay.innerHTML === '') {
-                    renderCommentsDisplay();
+                    const input = renderCommentsDisplay();
+                    if (shouldFocus && input) {
+                        setTimeout(() => {
+                            input.focus();
+                            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 0);
+                    }
+                } else {
+                    const input = commentsDisplay.querySelector('input');
+                    if (shouldFocus && input) {
+                        input.focus();
+                        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 }
                 commentsDisplay.classList.remove('hidden');
-                commentDisplayBtn.innerHTML = `💬 Hide Comments`;
+                commentDisplayBtn.innerHTML = '💬 Hide Comments';
             } else {
                 commentsDisplay.classList.add('hidden');
                 const updatedComments = getCommentsForStory(story.id);
                 const newCount = updatedComments.length;
-                commentDisplayBtn.innerHTML = newCount > 0 ? `💬 View ${newCount} Comment${newCount !== 1 ? 's' : ''}` : '💬 Add Comment';
+                commentDisplayBtn.innerHTML = newCount > 0 ? `💬 View ${newCount} Comment${newCount !== 1 ? 's' : ''}` : '💬 View 0 Comments';
             }
+        }
+        
+        commentDisplayBtn.addEventListener('click', () => {
+            toggleComments(false);
         });
         
         commentSection.appendChild(commentDisplayBtn);
@@ -1047,6 +1097,19 @@ function renderUserReviews() {
         
         li.appendChild(commentSection);
         li.appendChild(editActionsDiv);
+        
+        // Wire up Comment button to open comments and focus input
+        commentBtn.addEventListener('click', () => {
+            if (!commentsExpanded) {
+                toggleComments(true);
+            } else {
+                const input = commentsDisplay.querySelector('input');
+                if (input) {
+                    input.focus();
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
         
         if (window.lucide) {
             window.lucide.createIcons();
@@ -1077,6 +1140,14 @@ function setupShareTabs() {
         writeTab.classList.remove('active');
         renderUserReviews();
     });
+    
+    // Wire up sort dropdown
+    const sortSelect = document.getElementById('reviews-sort-select');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', () => {
+            renderUserReviews();
+        });
+    }
 }
 
 // Initialize when DOM ready
