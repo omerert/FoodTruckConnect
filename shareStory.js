@@ -926,7 +926,8 @@ function renderUserStories() {
         function renderCommentsDisplay() {
             commentsDisplay.innerHTML = '';
             const updatedComments = getCommentsForStory(story.id);
-            updatedComments.forEach((c, idx) => {
+            updatedComments.forEach((c, commentIdx) => {
+                // Top-level comment
                 const commentDiv = document.createElement('div');
                 commentDiv.className = 'flex gap-2';
                 
@@ -949,7 +950,7 @@ function renderUserStories() {
                 deleteBtn.className = 'text-xs text-red-500 hover:text-red-700 font-medium transition-colors flex-shrink-0 pt-1';
                 deleteBtn.textContent = '✕';
                 deleteBtn.addEventListener('click', () => {
-                    deleteCommentForStory(story.id, idx);
+                    deleteCommentForStory(story.id, commentIdx);
                     renderCommentsDisplay();
                     updateCommentCount();
                 });
@@ -961,12 +962,106 @@ function renderUserStories() {
                 date.className = 'text-xs text-gray-400 mt-1 px-1';
                 date.textContent = new Date(c.createdAt).toLocaleDateString();
                 
+                const replyLink = document.createElement('button');
+                replyLink.type = 'button';
+                replyLink.className = 'text-xs text-mauve-600 hover:text-mauve-800 font-medium transition-colors mt-1';
+                replyLink.textContent = 'Reply';
+                replyLink.addEventListener('click', () => {
+                    showReplyInput(commentIdx);
+                });
+                
                 content.appendChild(textDiv);
                 content.appendChild(date);
+                content.appendChild(replyLink);
                 
                 commentDiv.appendChild(avatar);
                 commentDiv.appendChild(content);
                 commentsDisplay.appendChild(commentDiv);
+                
+                // Render replies
+                if (c.replies && c.replies.length > 0) {
+                    c.replies.forEach((r, replyIdx) => {
+                        const replyDiv = document.createElement('div');
+                        replyDiv.className = 'flex gap-2 ml-8 mt-2';
+                        
+                        const replyAvatar = document.createElement('div');
+                        replyAvatar.className = 'flex-shrink-0 w-5 h-5 rounded-full bg-gradient-to-br from-sage-100 to-mauve-100 flex items-center justify-center text-xs font-bold text-sage-600';
+                        replyAvatar.textContent = '↳';
+                        
+                        const replyContent = document.createElement('div');
+                        replyContent.className = 'flex-1';
+                        
+                        const replyTextDiv = document.createElement('div');
+                        replyTextDiv.className = 'flex items-start justify-between gap-2 mb-1';
+                        
+                        const replyText = document.createElement('p');
+                        replyText.className = 'text-xs text-gray-700 bg-gray-50 rounded-lg px-3 py-2 border border-gray-100';
+                        replyText.textContent = r.text;
+                        
+                        const replyDeleteBtn = document.createElement('button');
+                        replyDeleteBtn.type = 'button';
+                        replyDeleteBtn.className = 'text-xs text-red-500 hover:text-red-700 font-medium transition-colors flex-shrink-0';
+                        replyDeleteBtn.textContent = '✕';
+                        replyDeleteBtn.addEventListener('click', () => {
+                            c.replies.splice(replyIdx, 1);
+                            const allComments = JSON.parse(localStorage.getItem('storyComments') || '{}');
+                            allComments[story.id] = updatedComments;
+                            localStorage.setItem('storyComments', JSON.stringify(allComments));
+                            renderCommentsDisplay();
+                        });
+                        
+                        replyTextDiv.appendChild(replyText);
+                        replyTextDiv.appendChild(replyDeleteBtn);
+                        
+                        const replyDate = document.createElement('p');
+                        replyDate.className = 'text-xs text-gray-400 px-1';
+                        replyDate.textContent = new Date(r.createdAt).toLocaleDateString();
+                        
+                        replyContent.appendChild(replyTextDiv);
+                        replyContent.appendChild(replyDate);
+                        
+                        replyDiv.appendChild(replyAvatar);
+                        replyDiv.appendChild(replyContent);
+                        commentsDisplay.appendChild(replyDiv);
+                    });
+                }
+                
+                // Reply input (shown when replying to this comment)
+                const replyInputDiv = document.createElement('div');
+                replyInputDiv.className = 'hidden ml-8 flex gap-2 mt-2';
+                replyInputDiv.setAttribute('data-reply-input', commentIdx);
+                
+                const replyInputAvatar = document.createElement('div');
+                replyInputAvatar.className = 'flex-shrink-0 w-5 h-5 rounded-full bg-gradient-to-br from-mauve-300 to-purple-300 flex items-center justify-center text-xs font-bold text-white';
+                replyInputAvatar.textContent = '↳';
+                
+                const replyFormDiv = document.createElement('div');
+                replyFormDiv.className = 'flex-1 flex gap-2';
+                
+                const replyInput = document.createElement('input');
+                replyInput.type = 'text';
+                replyInput.placeholder = 'Write a reply...';
+                replyInput.className = 'flex-1 px-2 py-1.5 rounded-lg border border-gray-200 bg-cream-50 text-xs focus:border-mauve-400 focus:ring-1 focus:ring-mauve-200 focus:outline-none transition-colors';
+                
+                const replySubmitBtn = document.createElement('button');
+                replySubmitBtn.type = 'button';
+                replySubmitBtn.textContent = 'Post';
+                replySubmitBtn.className = 'px-2 py-1.5 rounded-lg bg-mauve-600 text-white text-xs font-medium hover:bg-mauve-700 transition-colors';
+                
+                replySubmitBtn.addEventListener('click', () => {
+                    const val = replyInput.value.trim();
+                    if (val) {
+                        addReplyToComment(story.id, commentIdx, val);
+                        replyInputDiv.classList.add('hidden');
+                        renderCommentsDisplay();
+                    }
+                });
+                
+                replyFormDiv.appendChild(replyInput);
+                replyFormDiv.appendChild(replySubmitBtn);
+                replyInputDiv.appendChild(replyInputAvatar);
+                replyInputDiv.appendChild(replyFormDiv);
+                commentsDisplay.appendChild(replyInputDiv);
             });
             
             // Add comment input
@@ -1005,6 +1100,19 @@ function renderUserStories() {
             inputDiv.appendChild(inputAvatar);
             inputDiv.appendChild(formDiv);
             commentsDisplay.appendChild(inputDiv);
+        }
+        
+        function showReplyInput(commentIdx) {
+            // Hide all reply inputs
+            commentsDisplay.querySelectorAll('[data-reply-input]').forEach(el => {
+                el.classList.add('hidden');
+            });
+            // Show the one for this comment
+            const replyInput = commentsDisplay.querySelector(`[data-reply-input="${commentIdx}"]`);
+            if (replyInput) {
+                replyInput.classList.remove('hidden');
+                replyInput.querySelector('input').focus();
+            }
         }
         
         if (commentCount > 0) {
