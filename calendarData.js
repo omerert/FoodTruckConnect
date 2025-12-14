@@ -172,3 +172,11 @@ export const foodTruckSchedule = {
         }
     }
 };
+
+export const holidays = {
+    "2025-12-14": "Hanukkah Begins",
+    "2025-12-24": "Christmas Eve",
+    "2025-12-25": "Christmas Day",
+    "2025-12-26": "Kwanzaa Begins",
+    "2025-12-31": "New Year's Eve"
+};
