@@ -1,5 +1,5 @@
 // Import schedule data from separate module
-import { foodTruckSchedule } from './calendarData.js';
+import { foodTruckSchedule, holidays } from './calendarData.js';
 import { initJoinGroup } from './joinGroup.js';
 import { initShareStory, showStoriesView } from './shareStory.js';
 
@@ -221,6 +221,14 @@ function buildCalendar(year, month) {
         const monthStr = String(currentDate.getMonth() + 1).padStart(2, '0');
         const dayStr = String(currentDate.getDate()).padStart(2, '0');
         const dateString = `${yearStr}-${monthStr}-${dayStr}`;
+        
+        // Check for Holiday
+        if (holidays[dateString]) {
+            const holidayDiv = document.createElement('div');
+            holidayDiv.className = "text-[10px] font-bold text-red-500 mt-1 leading-tight";
+            holidayDiv.textContent = holidays[dateString];
+            dayCell.appendChild(holidayDiv);
+        }
         
         const eventData = foodTruckSchedule[dateString];
 
