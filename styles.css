@@ -2,7 +2,11 @@
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    /* Rows will be at least 140px but stretch to fit content (equalizing the row) */
+    /* REMOVED: grid-auto-rows: minmax(140px, auto); - This was causing the header to be tall */
+}
+
+/* ADDED: Apply the fixed height only to the days grid, not the header */
+#calendar-days-grid {
     grid-auto-rows: minmax(140px, auto);
 }
 
@@ -22,7 +26,7 @@
     transition: all 0.2s ease-in-out;
 }
 
-/* Remove the old harsh borders */
+/* ... Rest of the file remains unchanged ... */
 .calendar-day:not(.empty) {
     border: 1px solid #f3f4f6;
 }
@@ -34,38 +38,29 @@
     z-index: 10;
 }
 
-/* Empty cells (padding days) */
 .calendar-day.empty {
     background-color: transparent;
     border: none;
 }
 
-/* Highlight for today's date - Using Mauve Theme */
 .calendar-day.today-highlight {
     background-color: #fff;
-    /* Clean white background */
     border: 2px solid #9d7586;
-    /* Mauve-500 border */
     box-shadow: 0 0 0 4px rgba(157, 117, 134, 0.15);
-    /* Soft glow */
     position: relative;
     z-index: 20;
 }
 
-/* Event Indicator */
 .calendar-day.has-event {
     background-color: #fbf7f9;
-    /* Mauve-50 */
 }
 
-/* View Navigation Buttons (Toggle) */
 .view-nav-btn {
     transition: all 0.2s ease;
 }
 
 .view-nav-btn.active {
     background-color: #9d7586;
-    /* Mauve-500 */
     color: white;
     box-shadow: 0 2px 4px rgba(157, 117, 134, 0.3);
 }
@@ -80,7 +75,6 @@
     background-color: #f3f4f6;
 }
 
-/* List View Items */
 #upcoming-list-ul li {
     background-color: white;
     border: 1px solid #f3f4f6;
@@ -94,7 +88,6 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-/* Animation for Content */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -108,12 +101,9 @@
 }
 
 @keyframes bounce-subtle {
-
-    0%,
-    100% {
+    0%, 100% {
         transform: translateY(0);
     }
-
     50% {
         transform: translateY(-3px);
     }
@@ -129,7 +119,6 @@
     animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Toast Notifications */
 .toast-notification {
     min-width: 250px;
     font-size: 0.875rem;
@@ -137,7 +126,6 @@
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* Cuisine Filter Buttons */
 .cuisine-filter-btn {
     cursor: pointer;
     user-select: none;
@@ -147,7 +135,6 @@
     transform: scale(0.95);
 }
 
-/* Scrollbar Styling */
 ::-webkit-scrollbar {
     width: 8px;
 }
