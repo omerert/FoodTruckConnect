@@ -225,7 +225,8 @@ function buildCalendar(year, month) {
         // Check for Holiday
         if (holidays[dateString]) {
             const holidayDiv = document.createElement('div');
-            holidayDiv.className = "text-[10px] font-bold text-red-500 mt-1 leading-tight";
+            // Changed text-red-500 to text-mauve-700 (Brand color)
+            holidayDiv.className = "text-[10px] font-bold text-mauve-700 mt-1 leading-tight";
             holidayDiv.textContent = holidays[dateString];
             dayCell.appendChild(holidayDiv);
         }
